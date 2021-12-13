@@ -1,0 +1,81 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace EAP_Practical.Controller
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class StudentController : ControllerBase
+    {
+        private IStudentsRepository repository;
+
+        public StudentsController(IStudentsRepository repository)
+        {
+            this.repository = repository;
+        }
+
+        // GET: api/Students
+        [HttpGet]
+        public async Task<IEnumerable<Student>> GetStudents()
+        {
+            return await repository.GetStudentsAsync();
+        }
+
+        // GET: api/Students/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Student>> GetStudent(int id)
+        {
+            var Student = await repository.GetStudentByIdAsync(id);
+
+            if (Student == null)
+            {
+                return NotFound();
+            }
+
+            return Student;
+        }
+
+        // PUT: api/Students/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutStudent(int id, Student student)
+        {
+            student.Id = id;
+            await repository.UpdateStudentAsync(student);
+
+            return NoContent();
+        }
+
+        // POST: api/Students
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<Student>> PostStudent(StudentDto StudentDto)
+        {
+            Student Student = new()
+            {
+                FirstName = StudentDto.FirstName,
+                LastName = StudentDto.LastName,
+                PhoneNumber = StudentDto.PhoneNumber,
+                Email = StudentDto.Email,
+            };
+            await repository.AddStudentAsync(Student);
+            await repository.SaveChangesAsync();
+
+            return CreatedAtAction("GetStudent", new { id = Student.Id }, Student);
+        }
+
+        // DELETE: api/Students/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+
+            await repository.DeleteStudentAsync(id);
+            await repository.SaveChangesAsync();
+            return NoContent();
+        }
+
+    }
+}
